@@ -50,7 +50,14 @@
                 </div>
 
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link href="{{ route('agenda') }}" :active="request()->routeIs('agenda')">
+                    <x-nav-link href="{{ route('medicamentos.index') }}" :active="request()->routeIs('medicamentos.*')">
+                        {{ __('Farmacia') }}
+                    </x-nav-link>
+                </div>
+
+
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link href="{{ route('mis-citas') }}" :active="request()->routeIs('mis-citas')">
                         {{ __('Mis Citas') }}
                     </x-nav-link>
                 </div>

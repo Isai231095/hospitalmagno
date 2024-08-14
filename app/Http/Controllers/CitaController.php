@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Cita;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CitaController extends Controller
 {
@@ -87,4 +88,20 @@ class CitaController extends Controller
 
         return redirect()->route('citas.index')->with('success', 'Cita eliminada exitosamente.');
     }
+
+    public function misCitas()
+    {
+        $user = Auth::user();
+
+        if ($user->role->name === 'Doctor') {
+            // Filtrar las citas por el doctor autenticado
+            $citas = Cita::where('doctor_id', $user->id)->get();
+        } else {
+            return redirect()->route('dashboard')->with('error', 'Acceso denegado.');
+        }
+
+        return view('citas.mis-citas', compact('citas'));
+    }
+
+
 }
