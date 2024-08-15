@@ -9,7 +9,7 @@ use App\Http\Controllers\ConsultaController;
 use App\Http\Controllers\MedicamentoController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 Route::middleware([
