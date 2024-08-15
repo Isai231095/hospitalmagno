@@ -35,7 +35,7 @@ class ServiciosController extends Controller
         $request->validate([
 
             'name'=> 'required|string|min:5|max:100',
-            'price' => 'required|numeric|min:1.1|max:100.000',
+            'price' => 'required|numeric|min:0|max:99999999.99'
 
         ]);
 
