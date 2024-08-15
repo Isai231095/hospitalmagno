@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Cita;
 use App\Models\User;
+use App\Models\Servicios;
+use App\Models\Medicamento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -39,8 +41,8 @@ class CitaController extends Controller
         ]);
 
         // Creamos la cita
-        Cita::create([
-            'user_id' => auth()->id(), // El usuario autenticado será el creador de la cita
+        $cita = Cita::create([
+            'user_id' => auth()->id(),
             'doctor_id' => $request->doctor_id,
             'appointment_date' => $request->appointment_date,
             'notes' => $request->notes,
@@ -89,6 +91,7 @@ class CitaController extends Controller
         return redirect()->route('citas.index')->with('success', 'Cita eliminada exitosamente.');
     }
 
+    // Mostrar las citas del doctor autenticado
     public function misCitas()
     {
         $user = Auth::user();
@@ -103,5 +106,84 @@ class CitaController extends Controller
         return view('citas.mis-citas', compact('citas'));
     }
 
+    // Mostrar el formulario de consulta médica
+    public function show($id)
+    {
+        $cita = Cita::findOrFail($id);
+        $servicios = Servicios::all();
+        $medicamentos = Medicamento::all();
 
+        return view('consulta.show', compact('cita', 'servicios', 'medicamentos'));
+    }
+
+    // Guardar los datos de la consulta médica
+    public function storeConsulta(Request $request, $id)
+    {
+        $cita = Cita::findOrFail($id);
+
+        // Guardar los datos de la consulta
+        $cita->update([
+            'diagnosis' => $request->diagnosis,
+            'treatment' => $request->treatment,
+            'height' => $request->height,
+            'weight' => $request->weight,
+            'blood_pressure' => $request->blood_pressure,
+            'status' => 'finalizado',
+        ]);
+
+        // Guardar servicios y medicamentos relacionados
+        $cita->servicios()->sync($request->servicios);
+        $cita->medicamentos()->sync($request->medicamentos);
+
+        // Calcular los costos
+        $totalServicios = $cita->servicios->sum('price');
+        $totalMedicamentos = $cita->medicamentos->sum('precio');
+        $totalPagar = 600 + $totalServicios + $totalMedicamentos;
+
+        // Guardar los detalles del ticket en la base de datos
+        $ticketDetails = [
+            'diagnosis' => $cita->diagnosis,
+            'treatment' => $cita->treatment,
+            'height' => $cita->height,
+            'weight' => $cita->weight,
+            'blood_pressure' => $cita->blood_pressure,
+            'total_servicios' => $totalServicios,
+            'total_medicamentos' => $totalMedicamentos,
+            'total_pagar' => $totalPagar,
+            'servicios' => $cita->servicios->map(fn($s) => ['name' => $s->name, 'price' => $s->price])->toArray(),
+            'medicamentos' => $cita->medicamentos->map(fn($m) => ['name' => $m->nombre, 'price' => $m->precio])->toArray(),
+        ];
+
+        $cita->update(['ticket_details' => json_encode($ticketDetails)]);
+
+        // Redirigir al ticket
+        return redirect()->route('consulta.ticket', $cita->id);
+    }
+
+    // Mostrar el ticket de la consulta
+    public function ticket($id)
+    {
+        $cita = Cita::findOrFail($id);
+        $ticketDetails = json_decode($cita->ticket_details, true);
+
+        $totalServicios = $ticketDetails['total_servicios'];
+        $totalMedicamentos = $ticketDetails['total_medicamentos'];
+        $totalPagar = $ticketDetails['total_pagar'];
+
+        return view('consulta.ticket', compact('cita', 'totalServicios', 'totalMedicamentos', 'totalPagar'));
+    }
+
+    public function showTicket(Cita $cita)
+    {
+    $totalServicios = $cita->servicios->sum('price');
+    $totalMedicamentos = $cita->medicamentos->sum('precio');
+    $totalPagar = 600 + $totalServicios + $totalMedicamentos;
+
+    return view('consulta.ticket', [
+        'cita' => $cita,
+        'totalServicios' => $totalServicios,
+        'totalMedicamentos' => $totalMedicamentos,
+        'totalPagar' => $totalPagar,
+    ]);
+}
 }

@@ -38,3 +38,9 @@ Route::get('/consulta/{cita}', [ConsultaController::class, 'show'])->name('consu
 Route::post('/consulta/{cita}', [ConsultaController::class, 'store'])->name('consulta.store')->middleware('auth');
 Route::resource('medicamentos', MedicamentoController::class);
 Route::resource('medicamentos', MedicamentoController::class);
+Route::get('/consulta/realizar/{id}', [ServiciosController::class, 'show'])->name('consulta.show');
+Route::post('/consulta/{id}', [CitaController::class, 'store'])->name('consulta.store');
+Route::get('consulta/{cita}/ticket', [ConsultaController::class, 'ticket'])->name('consulta.ticket');
+Route::post('consulta/{cita}/finalizar', [ConsultaController::class, 'finalizar'])->name('consulta.finalizar');
+Route::post('/consulta/{cita}/ticket', [ConsultaController::class, 'showTicket'])->name('consulta.ticket');
+

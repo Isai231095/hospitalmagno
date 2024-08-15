@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Servicios;
+use App\Models\Cita;
+use App\Models\Medicamento;
 
 class ServiciosController extends Controller
 {
@@ -45,9 +47,13 @@ class ServiciosController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id) //MOSTRAR
+    public function show($id) //MOSTRAR
     {
-        //
+        $servicios = Servicios::all();
+        $medicamentos = Medicamento::all();
+        $cita = Cita::where('id', $id)->first();
+
+        return view('consulta.show', compact('servicios', 'cita', 'medicamentos'));
     }
 
     /**

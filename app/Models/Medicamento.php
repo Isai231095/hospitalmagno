@@ -14,4 +14,10 @@ class Medicamento extends Model
         'precio',
         'stock',
     ];
+
+    public function citas()
+    {
+        return $this->belongsToMany(Cita::class, 'cita_medicamento', 'medicamento_id', 'cita_id');
+    }
+
 }
